@@ -33,9 +33,7 @@ y_i =
 
 ### Objective function
 Maximize the collected scores:
-\[
-\max \sum_{i \in L} s_i \cdot y_i
-\]
+$$\max \sum_{i \in L} s_i \cdot y_i$$
 
 ### Constraints
 1. **Linking arc and location variables (outgoing degree):**
