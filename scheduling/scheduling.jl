@@ -52,6 +52,41 @@ function decode(inst::Instance, perm::Vector{Int})
     return Solution(makespan, assignment)
 end
 
+# Timer struct for simulated annealing
+mutable struct Timer
+    time_limit::Float64   # Time limit in seconds
+    start_time::Union{DateTime, Nothing} # The start time
+    iterations::Int # The number of iterations performed
+end
+
+# Constructor for the timer
+function Timer(time_limit::Float64)
+    return Timer(time_limit, now(), 0)
+end
+
+# Checks if the time limit is reached
+function expired(t::Timer)::Bool
+    if t.start_time === nothing
+        error("Timer not started!")
+    end
+    return elapsed(t) >= t.time_limit
+end
+
+# Calculated the remaining time
+function elapsed(t::Timer)::Float64
+    if t.start_time === nothing
+        error("Timer not started!")
+    end
+    elapsed = (now() - t.start_time).value / 1000.0
+    return elapsed
+end
+
+# Increment the iteration counter
+function tick!(t::Timer)
+    t.iterations += 1
+end
+
+# Simulated annealing main function
 function simulated_annealing(inst::Instance; 
                              time_limit::Float64=10.0)
 
@@ -60,7 +95,7 @@ function simulated_annealing(inst::Instance;
     alpha = 0.999
 
     # Startzeit
-    start_time = now()
+    timer = Timer(time_limit)
 
     # Initial solution: Sort the jobs in decreasing order by their processing times and apply list scheduling, yielding a 4/3-approximation algorithm
     perm = Vector{Int}(1:inst.n)
@@ -72,7 +107,7 @@ function simulated_annealing(inst::Instance;
     T = T0
 
     # Main loop
-    while (now() - start_time).value < time_limit * 1000
+    while !expired(timer)
         # Swap two random jobs
         i, j = rand(1:inst.n, 2)
         perm[i], perm[j] = perm[j], perm[i]
@@ -80,13 +115,10 @@ function simulated_annealing(inst::Instance;
         # Create new solution
         new_sol = decode(inst, perm)
         
-        println("best=", best_sol.makespan, " curr=", current_sol.makespan, " new=", new_sol.makespan)
-        
         # Accept deteriorating solutions only with a given probability
         delta = new_sol.makespan - current_sol.makespan
         rnd = rand()
         ex = exp(-delta / T)
-        println("rand=", rnd, " exp=", ex, " T=", T)
         if delta < 0 || rnd < ex
             current_sol = new_sol
             if new_sol.makespan < best_sol.makespan
@@ -99,6 +131,13 @@ function simulated_annealing(inst::Instance;
 
         # Cooling
         T *= alpha
+        
+        if (timer.iterations % 1000 == 0)
+            println("iteration=", timer.iterations, " best=", best_sol.makespan, " curr=", current_sol.makespan, " new=", new_sol.makespan)
+        end
+        
+        # Increment the iteration counter
+        tick!(timer)
     end
 
     # Return the best solution found
@@ -124,10 +163,11 @@ function main()
     
     # Apply simulated annealing and print the solution
     sol = simulated_annealing(inst; time_limit=10.0)
+    println("Assignment of jobs to machines:")
     for (job, machine) in enumerate(sol.assignment)
         println("Job $job -> Machine $machine")
     end
-    println("Makespan = ", sol.makespan)
+    println("Calculated makespan = ", sol.makespan)
 end
 
 # Start the main function
