@@ -37,9 +37,7 @@ $$\max \sum_{i \in L} s_i \cdot y_i$$
 
 ### Constraints
 1. **Linking arc and location variables (outgoing degree):**
-\[
-\sum_{\substack{j \in L \\ j \neq i}} x_{ij} = y_i \quad \forall i \in L
-\]
+$$\sum_{\substack{j \in L \\ j \neq i}} x_{ij} = y_i \quad \forall i \in L$$
 
 2. **Linking arc and location variables (incoming degree):**
 \[
