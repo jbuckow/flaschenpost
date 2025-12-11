@@ -1,32 +1,77 @@
 using DataStructures
 using Random, Dates
 
-# Instance of P||Cmax
+"""
+    Instance
+
+Represents an instance of the parallel machine scheduling problem (P||Cmax).
+
+# Fields
+- `m::Int`        : Number of machines
+- `n::Int`        : Number of jobs
+- `p::Vector{Int}`: Processing times `p_j` for each job
+"""
 struct Instance
-    m::Int                  # number of machines
-    n::Int                  # number of jobs
-    p::Vector{Int}          # processing times p_i
+    m::Int
+    n::Int
+    p::Vector{Int}
 end
 
-# Solution of P||Cmax
+"""
+    Solution
+
+Represents a solution of the parallel machine scheduling problem (P||Cmax).
+
+# Fields
+- `makespan::Int`: The resulting makespan
+- `assignment::Vector{Int}`: Assignment of jobs to machines
+"""
 struct Solution
-    makespan::Int           # resulting makespan
-    assignment::Vector{Int} # assignment of jobs to machines (length n)
+    makespan::Int
+    assignment::Vector{Int}
 end
 
-# Reads an instance from a file
+"""
+    read_instance(path::String) -> Instance
+
+Reads an instance of the parallel machine scheduling problem (P||Cmax) from a text file.
+
+# Arguments
+- `path::String`: Path to the input file.  
+  The file format is expected as:
+  1. First line: number of machines (m)
+  2. Second line: number of jobs (n)
+  3. Next n lines: processing times `p_i` for each job
+
+# Returns
+- `Instance`: The instances red in as struct
+"""
+
 function read_instance(path::String)
     lines = readlines(path)
     # Parse header
     m = parse(Int, lines[1])
     n = parse(Int, lines[2])
     # Parse processing times
-    p = [parse(Int, lines[i]) for i in 3:(2+n)]
+    p = [parse(Int, lines[j]) for j in 3:(2+n)]
     # Create the instance
     return Instance(m, n, p)
 end
 
-# Decodes an indirect solution representation consisting of a list of job indices by applying list scheduling, i.e., scheduling the next job on the machine with the least load.
+"""
+    decode(inst::Instance, perm::Vector{Int}) -> Solution
+
+Decodes an indirect solution representation for the parallel machine scheduling problem (P||Cmax).
+
+The function applies **list scheduling**: each job in the given permutation is scheduled on a machine with the current minimum load. A priority queue is used to efficiently select the least loaded machine at each step.
+
+# Arguments
+- `inst::Instance`: Input instance
+- `perm::Vector{Int}`: A permutation of job indices representing the order in which jobs are scheduled.
+
+# Returns
+- `Solution`: Decoded direct solution representation as a struct.
+"""
 function decode(inst::Instance, perm::Vector{Int})
     # Create a priority queue to efficiently obtain the minimum load machine
     heap = BinaryMinHeap{Tuple{Int,Int}}()
@@ -52,41 +97,108 @@ function decode(inst::Instance, perm::Vector{Int})
     return Solution(makespan, assignment)
 end
 
-# Timer struct for simulated annealing
+"""
+    Timer
+
+A mutable struct representing a timer for simulated annealing or other iterative algorithms.
+
+# Fields
+- `time_limit::Float64` Time limit in seconds for the algorithm run.
+
+- `start_time::Union{DateTime, Nothing}`  
+  The recorded start time of the timer.
+
+- `iterations::Int`  
+  Counter for the number of iterations performed during the run.
+"""
 mutable struct Timer
-    time_limit::Float64   # Time limit in seconds
-    start_time::Union{DateTime, Nothing} # The start time
-    iterations::Int # The number of iterations performed
+    time_limit::Float64
+    start_time::Union{DateTime, Nothing}
+    iterations::Int
 end
 
-# Constructor for the timer
+"""
+    Timer(time_limit::Float64) -> Timer
+
+Creates and initializes a `Timer` object with a given time limit.
+
+# Arguments
+- `time_limit::Float64`: The maximum allowed runtime in seconds.
+
+# Returns
+- `Timer`: A timer with the specified time limit.
+"""
 function Timer(time_limit::Float64)
     return Timer(time_limit, now(), 0)
 end
 
-# Checks if the time limit is reached
+"""
+    expired(t::Timer) -> Bool
+
+Checks whether the time limit has been reached.
+
+# Arguments
+- `t::Timer`: The timer.
+
+# Returns
+- `Bool`: `true` if the time limit is exceeded, otherwise `false`.
+"""
 function expired(t::Timer)::Bool
-    if t.start_time === nothing
-        error("Timer not started!")
-    end
     return elapsed(t) >= t.time_limit
 end
 
-# Calculated the remaining time
+"""
+    elapsed(t::Timer) -> Float64
+
+Calculates the elapsed time since the start of the timer.
+
+# Arguments
+- `t::Timer`: The timer
+
+# Returns
+- `Float64`: The elapsed time in seconds since the timer was created.
+"""
 function elapsed(t::Timer)::Float64
-    if t.start_time === nothing
-        error("Timer not started!")
-    end
     elapsed = (now() - t.start_time).value / 1000.0
     return elapsed
 end
 
-# Increment the iteration counter
+"""
+    tick!(t::Timer)
+
+Increments the iteration counter of the timer.
+
+# Arguments
+- `t::Timer`: The timer
+
+# Returns
+- `Nothing`: Just updates the timer.
+"""
 function tick!(t::Timer)
     t.iterations += 1
 end
 
-# Simulated annealing main function
+"""
+    simulated_annealing(inst::Instance; 
+                        time_limit::Float64=10.0,
+                        start_temperature_factor::Float64=0.0001,
+                        end_temperature_factor::Float64=0.000001) -> Solution
+
+Performs the **simulated annealing metaheuristic** to solve the parallel machine scheduling problem (P||Cmax).
+
+The algorithm works with an indirect solution representation in the shape of a permutation of all jobs. These indirect solutions are decoded into actual schedules by applying the list scheduling procedure, where the jobs are put one after the other to a machine with the currently least load. 
+
+Since the procedure starts with an initial solution obtained by sorting jobs in decreasing order by their processing times, it yields a 4/3-approximation guarantee. Afterwards, in the main loop, neighbor solutions are created by swapping jobs in the permutation and applying a randomized simulated annealing acceptance criterion to escape local minima. A dynamic version of geometric cooling is applied to reach a given target temperature (scaled down by the objective value). After a given number of non-improving iterations, a random partially shuffling is applied to diversify. 
+
+# Arguments
+- `inst::Instance`: Problem instance.
+- `time_limit::Float64=10.0`: Solving time limit in seconds.
+- `start_temperature_factor::Float64=0.0001`: Factor to initialize the starting temperature relative to the makespan.
+- `end_temperature_factor::Float64=0.000001`: Factor to determine the target final temperature relative to the makespan.
+
+# Returns
+- `Solution`: The best solution found within the solving time limit.
+"""
 function simulated_annealing(inst::Instance; 
                              time_limit::Float64=10.0,
                              start_temperature_factor::Float64=0.0001,
@@ -164,7 +276,22 @@ function simulated_annealing(inst::Instance;
     return best_sol
 end
 
-# Main function
+"""
+    main()
+
+Entry point of the scheduling program. Reads an instance from a file, applies the
+simulated annealing algorithm, and prints the resulting solution.
+
+# Usage
+Run from the command line: julia scheduling.jl <instance-file> <time-limit-seconds>
+
+# Arguments
+- `ARGS[1]`: Path to the instance file.
+- `ARGS[2]`: Solving time limit in seconds.
+
+# Returns
+- `Nothing`: Prints the solution and its makespan to the console.
+"""
 function main()
     # Check the command line arguments
     if length(ARGS) < 2

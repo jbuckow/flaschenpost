@@ -6,6 +6,7 @@ An instance with `N` jobs is given by a plain text file with `n+2` lines:
 - The following `n` lines specify the job processing times `p_i`
 
 For the instance source, see:
+
 **References**
 - P.M. França, M. Gendreau, G. Laporte, and F.M. Müller.  
   *A composite heuristic for the identical parallel machine scheduling problem with minimum makespan objective.*  
