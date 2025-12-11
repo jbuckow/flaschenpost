@@ -8,18 +8,11 @@ The MIP model used is defined as follows:
 $x_1$
 
 **The Cauchy-Schwarz Inequality**\
-$$x_{ij} \in \{ 0,1 \} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
+$$x_{ij} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 ### Decision variables
 - Binary arc variables:
-$$
-x_{ij} =
-\begin{cases}
-1 & \text{if arc } (i,j) \text{ is used}, \\
-0 & \text{otherwise}.
-\end{cases}
-\quad \forall i,j \in L
-$$
+$x_{ij} \forall i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 - Binary location variables:
 \[
@@ -45,5 +38,8 @@ $$\sum_{\substack{j \in L \\ j \neq i}} x_{ji} = y_i \quad \forall i \in L$$
 3. **Depot must always be visited:**
 $$y_1 = 1$$
 
-4. **Time limit constraint:**
-$$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \;\leq\; T_{\max}$$
+4. **Time limit must be respected:**
+$$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \leq T_{\max}$$
+
+5. **Subtour elimination constraints:**
+$$xxx$$
