@@ -10,8 +10,8 @@ end
 
 # Solution of P||Cmax
 struct Solution
-    assignment::Vector{Int} # machine assignment for each job (length n)
     makespan::Int           # resulting makespan
+    assignment::Vector{Int} # assignment of jobs to machines (length n)
 end
 
 # Reads an instance from a file
@@ -49,7 +49,7 @@ function decode(inst::Instance, perm::Vector{Int})
         push!(heap, (newload, machine))
     end
     # Return the created solution
-    return Solution(assignment, makespan)
+    return Solution(makespan, assignment)
 end
 
 function simulated_annealing(inst::Instance; 
@@ -57,7 +57,7 @@ function simulated_annealing(inst::Instance;
 
     # Initialisierung
     T0 = 100.0
-    alpha = 0.95
+    alpha = 0.999
 
     # Startzeit
     start_time = now()
@@ -72,17 +72,22 @@ function simulated_annealing(inst::Instance;
     T = T0
 
     # Main loop
-    while (now() - start_time).value / 1e3 < time_limit * 1000
+    while (now() - start_time).value < time_limit * 1000
         # Swap two random jobs
         i, j = rand(1:inst.n, 2)
         perm[i], perm[j] = perm[j], perm[i]
 
+        # Create new solution
         new_sol = decode(inst, perm)
-
-        delta = new_sol.makespan - current_sol.makespan
-
+        
+        println("best=", best_sol.makespan, " curr=", current_sol.makespan, " new=", new_sol.makespan)
+        
         # Accept deteriorating solutions only with a given probability
-        if delta < 0 || rand() < exp(-delta / T)
+        delta = new_sol.makespan - current_sol.makespan
+        rnd = rand()
+        ex = exp(-delta / T)
+        println("rand=", rnd, " exp=", ex, " T=", T)
+        if delta < 0 || rnd < ex
             current_sol = new_sol
             if new_sol.makespan < best_sol.makespan
                 best_sol = new_sol
@@ -100,8 +105,7 @@ function simulated_annealing(inst::Instance;
     return best_sol
 end
 
-
-
+# Main function
 function main()
     # Check the command line arguments
     if length(ARGS) < 1
@@ -118,14 +122,12 @@ function main()
     println("Number of jobs: ", inst.n)
     println("Processing times: ", inst.p)
     
-    # Apply decode
-    perm = Vector{Int}(1:inst.n)
-    sol = decode(inst, perm)
-    println(sol)
-    
-    # Apply simulated annealing
+    # Apply simulated annealing and print the solution
     sol = simulated_annealing(inst; time_limit=10.0)
-    
+    for (job, machine) in enumerate(sol.assignment)
+        println("Job $job -> Machine $machine")
+    end
+    println("Makespan = ", sol.makespan)
 end
 
 # Start the main function
