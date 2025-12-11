@@ -7,10 +7,10 @@ The MIP model used is defined as follows:
 
 ### Decision variables
 - Binary arc variables:
-$x_{ij} \quad \forall i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
+$x_{ij}$ for all $i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 - Binary location variables:
-$y_i \quad \forall i \in L$ with $y_i=1$ if location $i$ is visited, and $y_i=0$ otherwise.
+$y_i$ for all $i \in L$ with $y_i=1$ if location $i$ is visited, and $y_i=0$ otherwise.
 
 ### Objective function
 Maximize the collected scores:
@@ -18,7 +18,7 @@ $$\max \sum_{i \in L} s_i \cdot y_i$$
 
 ### Constraints
 1. **Linking arc and location variables (outgoing degree):**
-$$\sum_{\substack{j \in L \\ j \neq i}} x_{ij} = y_i \quad \forall i \in L$$
+$$\sum_{{j \in L \\ j \neq i}} x_{ij} = y_i \quad \forall i \in L$$
 
 2. **Linking arc and location variables (incoming degree):**
 $$\sum_{\substack{j \in L \\ j \neq i}} x_{ji} = y_i \quad \forall i \in L$$
