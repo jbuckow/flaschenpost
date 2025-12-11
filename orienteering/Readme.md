@@ -1,3 +1,4 @@
+## The Orienteering Problem
 The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three sample test instances are provided in the *instances/* directory.
 
 Run the program from the command line: julia orienteering.jl <instance-file>
@@ -6,14 +7,14 @@ The MIP model used is defined as follows:
 
 ### Decision variables
 - Binary arc variables:
-\[
+$$
 x_{ij} =
 \begin{cases}
 1 & \text{if arc } (i,j) \text{ is used}, \\
 0 & \text{otherwise}.
 \end{cases}
 \quad \forall i,j \in L
-\]
+$$
 
 - Binary location variables:
 \[
