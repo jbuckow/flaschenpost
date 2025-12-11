@@ -1,4 +1,5 @@
 using DataStructures
+using Random, Dates
 
 # Instance of P||Cmax
 struct Instance
@@ -25,7 +26,7 @@ function read_instance(path::String)
     return Instance(m, n, p)
 end
 
-# Decodes an indirect solution representation consisting only of a list of processing times by applying list scheduling, i.e., scheduling the next job to the machine with the least load.
+# Decodes an indirect solution representation consisting of a list of job indices by applying list scheduling, i.e., scheduling the next job on the machine with the least load.
 function decode(inst::Instance, perm::Vector{Int})
     # Create a priority queue to efficiently obtain the minimum load machine
     heap = BinaryMinHeap{Tuple{Int,Int}}()
@@ -51,6 +52,56 @@ function decode(inst::Instance, perm::Vector{Int})
     return Solution(assignment, makespan)
 end
 
+function simulated_annealing(inst::Instance; 
+                             time_limit::Float64=10.0)
+
+    # Initialisierung
+    T0 = 100.0
+    alpha = 0.95
+
+    # Startzeit
+    start_time = now()
+
+    # Initial solution: Sort the jobs in decreasing order by their processing times and apply list scheduling, yielding a 4/3-approximation algorithm
+    perm = Vector{Int}(1:inst.n)
+    perm = sortperm(inst.p; rev=true)
+    current_sol = decode(inst, perm)
+    
+    # Preparation for the main loop
+    best_sol = current_sol
+    T = T0
+
+    # Main loop
+    while (now() - start_time).value / 1e3 < time_limit * 1000
+        # Swap two random jobs
+        i, j = rand(1:inst.n, 2)
+        perm[i], perm[j] = perm[j], perm[i]
+
+        new_sol = decode(inst, perm)
+
+        delta = new_sol.makespan - current_sol.makespan
+
+        # Accept deteriorating solutions only with a given probability
+        if delta < 0 || rand() < exp(-delta / T)
+            current_sol = new_sol
+            if new_sol.makespan < best_sol.makespan
+                best_sol = new_sol
+            end
+        # Undo swap
+        else
+            perm[i], perm[j] = perm[j], perm[i]
+        end
+
+        # Cooling
+        T *= alpha
+    end
+
+    # Return the best solution found
+    return best_sol
+end
+
+
+
 function main()
     # Check the command line arguments
     if length(ARGS) < 1
@@ -71,6 +122,10 @@ function main()
     perm = Vector{Int}(1:inst.n)
     sol = decode(inst, perm)
     println(sol)
+    
+    # Apply simulated annealing
+    sol = simulated_annealing(inst; time_limit=10.0)
+    
 end
 
 # Start the main function
