@@ -40,16 +40,10 @@ $$\max \sum_{i \in L} s_i \cdot y_i$$
 $$\sum_{\substack{j \in L \\ j \neq i}} x_{ij} = y_i \quad \forall i \in L$$
 
 2. **Linking arc and location variables (incoming degree):**
-\[
-\sum_{\substack{j \in L \\ j \neq i}} x_{ji} = y_i \quad \forall i \in L
-\]
+$$\sum_{\substack{j \in L \\ j \neq i}} x_{ji} = y_i \quad \forall i \in L$$
 
 3. **Depot must always be visited:**
-\[
-y_1 = 1
-\]
+$$y_1 = 1$$
 
 4. **Time limit constraint:**
-\[
-\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \;\leq\; T_{\max}
-\]
+$$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \;\leq\; T_{\max}$$
