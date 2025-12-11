@@ -92,7 +92,7 @@ function simulated_annealing(inst::Instance;
                              start_temperature_factor::Float64=0.0001,
                              end_temperature_factor::Float64=0.000001)
 
-    # Startzeit
+    # Start the timer
     timer = Timer(time_limit)
 
     # Initial solution: Sort the jobs in decreasing order by their processing times and apply list scheduling, yielding a 4/3-approximation algorithm
@@ -106,7 +106,16 @@ function simulated_annealing(inst::Instance;
     alpha = 0.9999
 
     # Main loop
+    non_improving = 0
     while !expired(timer)
+        # Shuffle part of the solution after many non-improving solutions
+        if non_improving >= 1000000
+            len = div(inst.n, 2)
+            start = rand(1:(inst.n-len+1))
+            stop = start + len - 1
+            shuffle!(view(perm, start:stop))
+            non_improving = 0
+        end
         # Swap two random jobs
         i, j = rand(1:inst.n, 2)
         perm[i], perm[j] = perm[j], perm[i]
@@ -116,12 +125,13 @@ function simulated_annealing(inst::Instance;
         
         # Accept deteriorating solutions only with a given probability
         delta = new_sol.makespan - current_sol.makespan
-        rnd = rand()
-        ex = exp(-delta / temperature)
-        if delta < 0 || rnd < ex
+        if delta < 0 || rand() < exp(-delta / temperature)
             current_sol = new_sol
             if new_sol.makespan < best_sol.makespan
                 best_sol = new_sol
+                non_improving = 0
+            else
+                non_improving += 1
             end
         # Undo swap
         else
