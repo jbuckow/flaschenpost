@@ -14,7 +14,7 @@ $y_i$ for all $i \in L$ with $y_i=1$ if location $i$ is visited, and $y_i=0$ oth
 
 ### Objective function
 Maximize the collected scores:
-$$\max \sum\limits_{i \in L} {s_i \cdot y_i}$$
+$$\max \sum_{i \in L} s_i \cdot y_i$$
 
 ### Constraints
 1. **Linking arc and location variables (outgoing degree):**
