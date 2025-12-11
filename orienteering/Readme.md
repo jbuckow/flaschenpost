@@ -1,10 +1,7 @@
 ## The Orienteering Problem
-The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three sample test instances are provided in the *instances/* directory.
+The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three test instances are provided in the *instances/* directory. Run the program from the command line: `julia orienteering.jl <instance-file>`
 
-Run the program from the command line: `julia orienteering.jl <instance-file>`
-
-The MIP model used is defined as follows:
-
+## MIP model
 ### Decision variables
 - Binary arc variables:
 $x_{ij}$ for all $i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
@@ -30,4 +27,4 @@ $$y_1 = 1$$
 $$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \leq T_{\max}$$
 
 5. **Subtour elimination constraints:**
-$$xxx$$
+$$\sum_{i \in S, j \in S'} \geq y_k \quad \forall k \in S', S'=L\\S, S \subset L \text{with} 1 \in S$$
