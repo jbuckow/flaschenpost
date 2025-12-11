@@ -1,19 +1,25 @@
 using JuMP
 using Gurobi
 
-# Orienteering instance
-struct Instance
-    n::Int                     # Number of locations
-    Tmax::Float64              # Maximum available time
-    dist::Matrix{Float64}      # Travel time/cost matrix d[i,j]
-    scores::Vector{Float64}    # Score s[i] for each location i
-end
+"""
+    Instance
 
-# Orienteering solution
-struct Solution
-    route::Vector{Int}      # Sequence of locations visited (including depot)
-    score::Float64          # Total score reached
-    distance::Float64       # Total distance traveled
+Data structure representing an Orienteering Problem instance.
+
+# Fields
+- `n::Int`: Number of locations in the instance.
+- `Tmax::Float64`: Maximum available travel time.
+- `dist::Matrix{Float64}`: Distance or travel time matrix `d[i,j]` between locations.
+- `scores::Vector{Float64}`: Score `s[i]` associated with each location `i`.
+
+# Notes
+- The depot is typically included as one of the locations (index 1).
+"""
+struct Instance
+    n::Int
+    Tmax::Float64
+    dist::Matrix{Float64}
+    scores::Vector{Float64}
 end
 
 """
