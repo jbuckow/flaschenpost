@@ -85,6 +85,10 @@ function solve_orienteering(inst::Instance)
         # Extract current solution
         x_val = callback_value.(cb_data, x)
         y_val = callback_value.(cb_data, y)
+        # Check if the solution is integer feasible
+        if !all(val -> isapprox(val, round(val); atol=1e-6), x_val)
+            return
+        end
         # Determine the set S of all locations in the same route as the depot
         S = extract_tour(x_val, L, 1)
         # If only a single route exists (i.e., S covers all visited locations)
