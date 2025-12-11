@@ -5,24 +5,12 @@ Run the program from the command line: `julia orienteering.jl <instance-file>`
 
 The MIP model used is defined as follows:
 
-$x_1$
-
-**The Cauchy-Schwarz Inequality**\
-$$x_{ij} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
-
 ### Decision variables
 - Binary arc variables:
-$x_{ij} \forall i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
+$x_{ij} \quad \forall i,j \in L$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 - Binary location variables:
-\[
-y_i =
-\begin{cases}
-1 & \text{if location } i \text{ is visited}, \\
-0 & \text{otherwise}.
-\end{cases}
-\quad \forall i \in L
-\]
+$y_i \quad \forall i \in L$ with $y_i=1$ if location $i$ is visited, and $y_i=0$ otherwise.
 
 ### Objective function
 Maximize the collected scores:
