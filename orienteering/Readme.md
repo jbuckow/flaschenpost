@@ -27,5 +27,5 @@ $$y_1 = 1$$
 $$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \leq T_{\max}$$
 
 5. **Subtour elimination constraints:**
-$$\sum_{i \in S, j \in S'} x_{ij} \geq y_k \quad \forall k \in S',\, S'=L-S,\, S \subset L \text{with} 1 \in S$$
+$$\sum_{i \in S, j \in S'} x_{ij} \geq y_k \quad \forall k \in S',\quad S'=L-S,\quad S \subset L \quad\text{with}\quad 1 \in S$$
 $$\sum_{j \in S, i \in S'} x_{ji} \geq y_k \quad \forall k \in S',\, S'=L-S,\, S \subset L \text{with} 1 \in S$$
