@@ -5,6 +5,8 @@ Run the program from the command line: julia orienteering.jl <instance-file>
 
 The MIP model used is defined as follows:
 
+$x_1$
+
 ### Decision variables
 - Binary arc variables:
 $$
