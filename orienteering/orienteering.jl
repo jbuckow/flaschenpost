@@ -7,7 +7,6 @@ struct Instance
     Tmax::Float64              # Maximum available time
     dist::Matrix{Float64}      # Travel time/cost matrix d[i,j]
     scores::Vector{Float64}    # Score s[i] for each location i
-
 end
 
 # Orienteering solution
@@ -17,7 +16,22 @@ struct Solution
     distance::Float64       # Total distance traveled
 end
 
-# Reads in an instance from a given file path
+"""
+    read_instance(path::String) -> Instance
+
+Reads a problem instance from a text file.
+
+# Arguments
+- `path::String`: Path to the instance file.  
+  Expected format:
+  1. First line: number of locations `n` (Int)
+  2. Second line: time limit `Tmax` (Float64)
+  3. Next `n` lines: distance matrix (Float64 values separated by spaces)
+  4. Next `n` lines: scores for each node (Float64)
+
+# Returns
+- `Instance`: An orienteering instance object.
+"""
 function read_instance(path::String)
     # Read the file header
     lines = readlines(path)
@@ -38,7 +52,19 @@ function read_instance(path::String)
     return Instance(n, Tmax, dist, scores)
 end
 
-# Helper function to extract a route from a starting point
+"""
+    extract_tour(x_val::AbstractArray{<:Real,2}, L::AbstractVector{<:Integer}, depot::Int) -> Vector{Int}
+
+Constructs a route starting from a given depot location based on the values of two-index variables.
+
+# Arguments
+- `x_val::AbstractArray{<:Real,2}`: A 2D array representing the values of the two-index variables
+- `L::AbstractVector{<:Integer}`: Set of locations.
+- `depot::Int`: Starting location (depot).
+
+# Returns
+- `Vector{Int}`: The sequence of locations visited in the tour.
+"""
 function extract_tour(x_val::AbstractArray{<:Real,2}, L::AbstractVector{<:Integer}, depot::Int)
     current = depot
     route = [depot]
@@ -53,7 +79,17 @@ function extract_tour(x_val::AbstractArray{<:Real,2}, L::AbstractVector{<:Intege
     return route
 end
 
-# Build and solve the problem as MIP
+"""
+    solve_orienteering(inst::Instance) -> Solution
+
+Builds and solves the Orienteering Problem as a Mixed Integer Program (MIP).
+
+# Arguments
+- `inst::Instance`: The problem instance
+
+# Returns
+- `Bool`: `true` if the instance was solved successfully and `false` otherwise.
+"""
 function solve_orienteering(inst::Instance)
     # Define set of all locations
     L = 1:inst.n
@@ -121,19 +157,27 @@ function solve_orienteering(inst::Instance)
     status = termination_status(model)
     if status == MOI.OPTIMAL
         println("Optimal score: ", objective_value(model))
-        println("Visited nodes: ", [i for i in L if value(y[i]) > 0.5])
         xsol = value.(x)
         tour = extract_tour(xsol, L, 1)
-        print(tour)
-        println(xsol)
-        return model
+        println("Optimal tour: ", tour)
+        return true
     else
         println("Solver terminated with status: ", status)
-        return nothing
+        return false
     end
 end
 
-# Main function
+"""
+    main()
+
+Entry point of the program. Handles command-line arguments, reads the problem instance, prints basic information, and calls the solver.
+
+# Usage
+Run the program from the command line: julia orienteering.jl <instance-file>
+
+# Returns
+- Nothing. Prints results or usage instructions to the console.
+"""
 function main()
     # Check the command line arguments
     if length(ARGS) < 1
@@ -151,7 +195,6 @@ function main()
     
     # Solve the instance
     solve_orienteering(inst)
-
 end
 
 # Start the main function
