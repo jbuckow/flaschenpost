@@ -1,6 +1,16 @@
 ## The Orienteering Problem
 The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three test instances are provided in the *instances/* directory. Run the program from the command line: `julia orienteering.jl <instance-file>`
 
+## Problem Description
+
+- A set of locations $L$ with scores $s_i$ for each location $i \in L$.
+- A travel time matrix where $d_{ij}$ indicates the time required to travel from location $i$ to location $j$.
+- A total available time $T_{\max}$ for the route.
+- A route starts and ends at depot location $1$.
+
+### Objective
+Find a feasible route that respects the time limit and maximizes the total score of the visited locations.
+
 ## MIP model
 ### Decision variables
 - Binary arc variables:
@@ -29,3 +39,5 @@ $$\sum_{i \in L} \sum_{j \in L} d_{ij} \cdot x_{ij} \leq T_{\max}$$
 5. **Subtour elimination constraints:**
 $$\sum_{i \in S, j \in S'} x_{ij} \geq y_k \quad \forall k \in S',\quad S'=L-S,\quad S \subset L \quad\text{with}\quad 1 \in S$$
 $$\sum_{j \in S, i \in S'} x_{ji} \geq y_k \quad \forall k \in S',\quad S'=L-S,\quad S \subset L \quad\text{with}\quad 1 \in S$$
+
+Please note that violated subtour elimination constraints are inserted step by step using lazy cuts (isolated components are identified).
