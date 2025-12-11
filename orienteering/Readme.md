@@ -8,7 +8,7 @@ The MIP model used is defined as follows:
 $x_1$
 
 **The Cauchy-Schwarz Inequality**\
-$$\x_{ij} \in \{0,1\} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
+$$x_{ij} \in {0,1} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 ### Decision variables
 - Binary arc variables:
