@@ -8,7 +8,7 @@ The MIP model used is defined as follows:
 $x_1$
 
 **The Cauchy-Schwarz Inequality**\
-$$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
+$$\x_{ij} \in \{0,1\} \forall i,j \in L$$ with $x_{ij}=1$ if arc $(i,j)$ is used and $x_{ij}=0$ otherwise.
 
 ### Decision variables
 - Binary arc variables:
