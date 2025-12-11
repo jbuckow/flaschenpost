@@ -16,7 +16,7 @@ end
 # Reads an instance from a file
 function read_instance(path::String)
     lines = readlines(path)
-    # Parse first two lines
+    # Parse header
     m = parse(Int, lines[1])
     n = parse(Int, lines[2])
     # Parse processing times
@@ -25,28 +25,30 @@ function read_instance(path::String)
     return Instance(m, n, p)
 end
 
-function calculate_ub(m::Int, pjs::Vector{Int})
-    # Sortiere Jobs absteigend (Largest Processing Time zuerst)
-    #sort!(pjs, rev=true)
-
-    # Min-Heap mit m Nullen (Startlasten der Maschinen)
-    heap = BinaryMinHeap{Int}()
-    for _ in 1:m
-        push!(heap, 0)
+# Decodes an indirect solution representation consisting only of a list of processing times by applying list scheduling, i.e., scheduling the next job to the machine with the least load.
+function decode(inst::Instance, perm::Vector{Int})
+    # Create a priority queue to efficiently obtain the minimum load machine
+    heap = BinaryMinHeap{Tuple{Int,Int}}()
+    for machine in 1:inst.m
+        push!(heap, (0, machine)) # At the beginning the load is 0
     end
-
-    # Laufendes Maximum der Maschinenlasten (Makespan)
-    max_load = 0
-
-    # Verteile Jobs: jeweils auf die Maschine mit kleinster Last
-    for pj in pjs
-        minload = pop!(heap)          # kleinste aktuelle Last
-        newload = minload + pj        # aktualisierte Last dieser Maschine
-        max_load = max(max_load, newload)
-        push!(heap, newload)          # zurück in den Min-Heap
+    # Create an empty assignment of jobs to machines
+    assignment = Vector{Int}(undef, inst.n)
+    # Makespan counting variable
+    makespan = 0
+    # Process all jobs according the given permutation
+    for j in perm
+        # Select the minimum load machine
+        (minload, machine) = pop!(heap)
+        # Update load and job assignment
+        newload = minload + inst.p[j]
+        makespan = max(makespan, newload)
+        assignment[j] = machine
+        # Update priority queue
+        push!(heap, (newload, machine))
     end
-
-    return max_load
+    # Return the created solution
+    return Solution(assignment, makespan)
 end
 
 function main()
@@ -64,6 +66,11 @@ function main()
     println("Number of machines: ", inst.m)
     println("Number of jobs: ", inst.n)
     println("Processing times: ", inst.p)
+    
+    # Apply decode
+    perm = Vector{Int}(1:inst.n)
+    sol = decode(inst, perm)
+    println(sol)
 end
 
 # Start the main function
