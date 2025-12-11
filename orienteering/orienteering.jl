@@ -4,9 +4,10 @@ using Gurobi
 # Orienteering instance
 struct Instance
     n::Int                     # Number of locations
-    scores::Vector{Float64}    # Score s[i] for each location i
-    dist::Matrix{Float64}      # Travel time/cost matrix d[i,j]
     Tmax::Float64              # Maximum available time
+    dist::Matrix{Float64}      # Travel time/cost matrix d[i,j]
+    scores::Vector{Float64}    # Score s[i] for each location i
+
 end
 
 # Orienteering solution
@@ -16,19 +17,25 @@ struct Solution
     distance::Float64       # Total distance traveled
 end
 
-# Create a small example instance
-function example_instance()
-    n = 5
-    scores = [0.0, 10.0, 15.0, 20.0, 25.0]   # Location 1 = depot with score 0
-    dist = [
-        0.0   10.0  20.0  15.0  30.0;
-        10.0  0.0   25.0  35.0  20.0;
-        20.0  25.0  0.0   30.0  15.0;
-        15.0  35.0  30.0  0.0   10.0;
-        30.0  20.0  15.0  10.0  0.0
-    ]
-    Tmax = 60.0
-    return Instance(n, scores, dist, Tmax)
+# Reads in an instance from a given file path
+function read_instance(path::String)
+    # Read the file header
+    lines = readlines(path)
+    n = parse(Int, lines[1])
+    Tmax = parse(Float64, lines[2])
+    # Read the distance matrix
+    dist = Array{Float64}(undef, n, n)
+    for i in 1:n
+        row = split(lines[2 + i])
+        dist[i, :] = parse.(Float64, row)
+    end
+    # Read the scores
+    scores = Vector{Float64}(undef, n)
+    for i in 1:n
+        scores[i] = parse(Float64, lines[2 + n + i])
+    end
+    # Create the instance
+    return Instance(n, Tmax, dist, scores)
 end
 
 # Helper function to extract a route from a starting point
@@ -122,7 +129,27 @@ function solve_orienteering(inst::Instance)
     end
 end
 
-# Solve the example instance
-inst = example_instance()
-solve_orienteering(inst)
+# Main function
+function main()
+    # Check the command line arguments
+    if length(ARGS) < 1
+        println("Usage: julia orienteering.jl <instance-file>")
+        return
+    end
+
+    # Read the instance
+    filepath = ARGS[1]
+    inst = read_instance(filepath)
+    
+    # Print information about the instance
+    println("Number of locations: ", inst.n)
+    println("Time limit: ", inst.Tmax)
+    
+    # Solve the instance
+    solve_orienteering(inst)
+
+end
+
+# Start the main function
+main()
 
