@@ -88,11 +88,9 @@ end
 
 # Simulated annealing main function
 function simulated_annealing(inst::Instance; 
-                             time_limit::Float64=10.0)
-
-    # Initialisierung
-    T0 = 100.0
-    alpha = 0.999
+                             time_limit::Float64=10.0,
+                             start_temperature_factor::Float64=0.0001,
+                             end_temperature_factor::Float64=0.000001)
 
     # Startzeit
     timer = Timer(time_limit)
@@ -104,7 +102,8 @@ function simulated_annealing(inst::Instance;
     
     # Preparation for the main loop
     best_sol = current_sol
-    T = T0
+    temperature = start_temperature_factor * best_sol.makespan
+    alpha = 0.9999
 
     # Main loop
     while !expired(timer)
@@ -118,7 +117,7 @@ function simulated_annealing(inst::Instance;
         # Accept deteriorating solutions only with a given probability
         delta = new_sol.makespan - current_sol.makespan
         rnd = rand()
-        ex = exp(-delta / T)
+        ex = exp(-delta / temperature)
         if delta < 0 || rnd < ex
             current_sol = new_sol
             if new_sol.makespan < best_sol.makespan
@@ -129,10 +128,21 @@ function simulated_annealing(inst::Instance;
             perm[i], perm[j] = perm[j], perm[i]
         end
 
+        # Adapt the cooling procedure dynamically such that the target temperature is reached in the end (independent of the time limit)
+        if (timer.iterations > 5 && timer.iterations % 1000 == 0)
+            elapsed_seconds = elapsed(timer)
+            iters_per_second = timer.iterations / elapsed_seconds
+            time_left_seconds = timer.time_limit - elapsed_seconds
+            iters_remaining = time_left_seconds * iters_per_second
+            target_temperature = best_sol.makespan * end_temperature_factor
+            alpha = min(1.0, (target_temperature / temperature) ^ (1 / iters_remaining))
+        end
+
         # Cooling
-        T *= alpha
+        temperature *= alpha
         
-        if (timer.iterations % 1000 == 0)
+        # Print information about the solving process
+        if (timer.iterations % 10000 == 0)
             println("iteration=", timer.iterations, " best=", best_sol.makespan, " curr=", current_sol.makespan, " new=", new_sol.makespan)
         end
         
@@ -147,8 +157,8 @@ end
 # Main function
 function main()
     # Check the command line arguments
-    if length(ARGS) < 1
-        println("Usage: julia scheduling.jl <instance-file>")
+    if length(ARGS) < 2
+        println("Usage: julia scheduling.jl <instance-file> <time-limit-seconds")
         return
     end
 
@@ -162,7 +172,7 @@ function main()
     println("Processing times: ", inst.p)
     
     # Apply simulated annealing and print the solution
-    sol = simulated_annealing(inst; time_limit=10.0)
+    sol = simulated_annealing(inst; time_limit=parse(Float64, ARGS[2]))
     println("Assignment of jobs to machines:")
     for (job, machine) in enumerate(sol.assignment)
         println("Job $job -> Machine $machine")
