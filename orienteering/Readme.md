@@ -1,5 +1,5 @@
 ## The Orienteering Problem
-The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three test instances are provided in the *instances/* directory. Run the program from the command line: `julia orienteering.jl <instance-file>`
+The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three test instances are provided in the *instances/* directory.
 
 ## Problem Description
 
@@ -10,6 +10,9 @@ The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1,
 
 ### Objective
 Find a feasible route that respects the time limit and maximizes the total score of the visited locations.
+
+## Usage
+Run from the command line: `julia orienteering.jl <instance-file>`
 
 ## MIP model
 ### Decision variables
