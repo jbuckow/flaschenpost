@@ -37,6 +37,51 @@ struct Solution
 end
 
 """
+    validate_solution(inst::Instance, sol::Solution) -> Bool
+
+Validates whether a given solution is feasible for a given Orienteering Problem instance.
+
+# Checks
+- The tour starts and ends at the depot (location 1).
+- Each location is visited at most once.
+- The total travel time of the route does not exceed the time limit.
+- The total score of visited locations matches the score in the solution.
+
+# Returns
+- `true` if the solution is feasible, otherwise `false`.
+"""
+function validate_solution(inst::Instance, sol::Solution)::Bool
+    # Check depot at start and end
+    if sol.route[1] != 1 || sol.route[end] != 1
+        println("Error: Route must start and end at depot location (1).")
+        return false
+    end
+    # Check uniqueness of non-depot visits
+    if length(sol.route) != length(Set(sol.route)) + 1
+        println("Error: A location is visited more than once.")
+        return false
+    end
+    # Check the tour length
+    tour_length = 0.0
+    for i in 1:(length(sol.route)-1)
+        tour_length += inst.dist[sol.route[i], sol.route[i+1]]
+    end
+    if tour_length > inst.Tmax
+        println("Error: Tour length = $tour_length exceeds Tmax = $(inst.Tmax)")
+        return false
+    end
+    # Check the score
+    visited_locations = Set(sol.route)
+    computed_score = sum(inst.scores[j] for j in visited_locations)
+    if computed_score != sol.total_score
+        println("Error: Score mismatch. Calculated = $computed_score; Solution = $(sol.total_score)")
+        return false
+    end
+    # Otherwise the solution is feasible
+    return true
+end
+
+"""
     read_instance(path::String) -> Instance
 
 Reads a problem instance from a text file.
@@ -221,6 +266,10 @@ function main()
     
     # Validate and print the solution
     if sol != nothing
+        if !validate_solution(inst, sol)
+            println("Error: solution is infeasible.")
+            return
+        end
         println("Total score: ", sol.total_score)
         println("Tour: ", sol.route)
     end
