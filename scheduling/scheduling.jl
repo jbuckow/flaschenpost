@@ -1,5 +1,6 @@
+using Dates
 using DataStructures
-using Random, Dates
+using Random
 
 """
     Instance
@@ -193,6 +194,7 @@ Since the procedure starts with an initial solution obtained by sorting jobs in 
 # Arguments
 - `inst::Instance`: Problem instance.
 - `time_limit::Float64=10.0`: Solving time limit in seconds.
+- `seed::Int=425234`: The pseudo random number generator seed.
 - `start_temperature_factor::Float64=0.0001`: Factor to initialize the starting temperature relative to the makespan.
 - `end_temperature_factor::Float64=0.000001`: Factor to determine the target final temperature relative to the makespan.
 
@@ -201,11 +203,15 @@ Since the procedure starts with an initial solution obtained by sorting jobs in 
 """
 function simulated_annealing(inst::Instance; 
                              time_limit::Float64=10.0,
+                             seed::Int32=425234,
                              start_temperature_factor::Float64=0.0001,
                              end_temperature_factor::Float64=0.000001)
 
     # Start the timer
     timer = Timer(time_limit)
+    
+    # Set the seed
+    Random.seed!(seed)
 
     # Initial solution: Sort the jobs in decreasing order by their processing times and apply list scheduling, yielding a 4/3-approximation algorithm
     perm = Vector{Int}(1:inst.n)
@@ -288,14 +294,15 @@ Run from the command line: julia scheduling.jl <instance-file> <time-limit-secon
 # Arguments
 - `ARGS[1]`: Path to the instance file.
 - `ARGS[2]`: Solving time limit in seconds.
+- `ARGS[3]`: Seed for the random number generator.
 
 # Returns
 - `Nothing`: Prints the solution and its makespan to the console.
 """
 function main()
     # Check the command line arguments
-    if length(ARGS) < 2
-        println("Usage: julia scheduling.jl <instance-file> <time-limit-seconds")
+    if length(ARGS) < 3
+        println("Usage: julia scheduling.jl <instance-file> <time-limit-seconds> <seed>")
         return
     end
 
@@ -309,12 +316,14 @@ function main()
     println("Processing times: ", inst.p)
     
     # Apply simulated annealing and print the solution
-    sol = simulated_annealing(inst; time_limit=parse(Float64, ARGS[2]))
+    sol = simulated_annealing(inst; time_limit=parse(Float64, ARGS[2]), seed=parse(Int32, ARGS[3]))
+    
+    # Print the solution, including its makespan
     println("Assignment of jobs to machines:")
     for (job, machine) in enumerate(sol.assignment)
         println("Job $job -> Machine $machine")
     end
-    println("Calculated makespan = ", sol.makespan)
+    println("Calculated makespan: ", sol.makespan)
 end
 
 # Start the main function
