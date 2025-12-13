@@ -23,6 +23,20 @@ struct Instance
 end
 
 """
+    Solution
+
+Represents a solution for the Orienteering Problem.
+
+# Fields
+- `route::Vector{Int}`: The ordered sequence of visited locations, including the depot (location 1) at the start and end of the route. Example: `[1, 3, 5, 1]` means the route starts at depot 1, visits locations 3 and 5, and returns to depot 1.
+- `total_score::Float64`: The sum of the scores of all visited locations.
+"""
+struct Solution
+    route::Vector{Int}
+    total_score::Float64
+end
+
+"""
     read_instance(path::String) -> Instance
 
 Reads a problem instance from a text file.
@@ -162,14 +176,17 @@ function solve_orienteering(inst::Instance)
     # Collect results
     status = termination_status(model)
     if status == MOI.OPTIMAL
-        println("Optimal score: ", objective_value(model))
+    # Extract the tour
         xsol = value.(x)
         tour = extract_tour(xsol, L, 1)
-        println("Optimal tour: ", tour)
-        return true
+        push!(tour, 1)
+        # Create and return solution
+        sol = Solution(tour, objective_value(model))
+        return sol
+    # If no solution was found
     else
         println("Solver terminated with status: ", status)
-        return false
+        return nothing
     end
 end
 
@@ -200,7 +217,13 @@ function main()
     println("Time limit: ", inst.Tmax)
     
     # Solve the instance
-    solve_orienteering(inst)
+    sol = solve_orienteering(inst)
+    
+    # Validate and print the solution
+    if sol != nothing
+        println("Total score: ", sol.total_score)
+        println("Tour: ", sol.route)
+    end
 end
 
 # Start the main function
