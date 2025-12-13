@@ -1,5 +1,5 @@
 ## The Orienteering Problem
-The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia. Three test instances are provided in the *instances/* directory.
+The Mixed Integer Programming (MIP) model for the Orienteering Problem (Group 1, Case 1) is implemented in Julia and using Gurobi. Three test instances are provided in the *instances/* directory.
 
 ## Problem Description
 
@@ -44,3 +44,6 @@ $$\sum_{i \in S, j \in S'} x_{ij} \geq y_k \quad \forall k \in S',\quad S'=L-S,\
 $$\sum_{i \in S, j \in S'} x_{ji} \geq y_k \quad \forall k \in S',\quad S'=L-S,\quad S' \neq \emptyset,\quad S \subset L,\quad\text{with}\quad 1 \in S$$
 
 Please note that violated subtour elimination constraints are inserted step by step using lazy cuts (isolated components are identified).
+
+### Branching strategy
+Assign higher priorities to the the $y$-variables related to the inclusion or exclusion of locations.

@@ -1,6 +1,6 @@
 # Job Scheduling with Multiple Machines
 
-A simulated annealing solver is implemented in Julia to solve the Parallel Machine Scheduling Problem (Group 3, Case 3).
+A simulated annealing solver is implemented in Julia to solve the Parallel Machine Scheduling Problem (Group 3, Case 3). Twelve test instances from the literature are provided in the *instances/* directory.
 
 ## Problem description
 - A set of jobs $J=\{1,2,\dots,n\}$ with corresponding processing times $p_j$.
