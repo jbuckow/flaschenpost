@@ -46,4 +46,4 @@ $$\sum_{i \in S, j \in S'} x_{ji} \geq y_k \quad \forall k \in S',\quad S'=L-S,\
 Please note that violated subtour elimination constraints are inserted step by step using lazy cuts (isolated components are identified).
 
 ### Branching strategy
-Assign higher priorities to the the $y$-variables related to the inclusion or exclusion of locations.
+Assign higher branching priorities to the the $y$-variables related to the inclusion or exclusion of locations.
