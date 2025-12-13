@@ -33,6 +33,49 @@ struct Solution
 end
 
 """
+    validate_solution(inst::Instance, sol::Solution) -> Bool
+
+Validates if a given solution is feasible for the problem instance `inst`.
+
+# Checks
+- Each job is assigned to exactly one machine.
+- Machine indices are within the valid range (1..m).
+- The makespan equals the maximum load across all machines.
+
+# Arguments
+- `inst::Instance`: Problem instance.
+- `sol::Solution`: Solution to be verified.
+
+# Returns
+- `Bool`: `true` if the solution is feasible, otherwise `false`.
+"""
+function validate_solution(inst::Instance, sol::Solution)::Bool
+    # Check assignment length
+    if length(sol.assignment) != inst.n
+    	println("Error: assignment length = $(length(sol.assignment)), expected = $(inst.n)")
+        return false
+    end
+    # Check machine indices
+    if any(machine -> machine < 1 || machine > inst.m, sol.assignment)
+        println("Error: invalid machine index found in assignment (valid range: 1..$(inst.m))")
+        return false
+    end
+    # Compute load per machine
+    loads = zeros(Int, inst.m)
+    for (job, machine) in enumerate(sol.assignment)
+        loads[machine] += inst.p[job]
+    end
+    # Check makespan
+    computed_makespan = maximum(loads)
+    if computed_makespan != sol.makespan
+        println("Error: Makespan mismatch. Calculated = $computed_makespan; Solution = $(sol.makespan)")
+    	return false
+    end
+    # Solution is feasible
+    return true
+end
+
+"""
     read_instance(path::String) -> Instance
 
 Reads an instance of the parallel machine scheduling problem (P||Cmax) from a text file.
@@ -317,6 +360,12 @@ function main()
     
     # Apply simulated annealing and print the solution
     sol = simulated_annealing(inst; time_limit=parse(Float64, ARGS[2]), seed=parse(Int32, ARGS[3]))
+    
+    # Check if the given solution is feasible
+    if !validate_solution(inst, sol)
+        println("Error: solution is infeasible.")
+        return
+    end
     
     # Print the solution, including its makespan
     println("Assignment of jobs to machines:")
